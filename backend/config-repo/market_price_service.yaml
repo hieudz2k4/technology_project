@@ -1,0 +1,37 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+server:
+  port: 8082
+
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+
+coindesk:
+  api:
+    key: 2b54c9be8a773c882fd52d5a4c42088332af3b6cbbfeb3463d8f17b5180379b7
+  ws-url: wss://data-streamer.coindesk.com
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

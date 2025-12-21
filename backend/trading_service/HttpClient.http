@@ -1,0 +1,137 @@
+@host = http://localhost:8081
+@contentType = application/json
+
+# ==============================================================================
+# TRADING SERVICE
+# ==============================================================================
+
+### OrderController: Test
+GET {{host}}/api/trading/test
+
+### Trading Service: Add Pair (BTC-USDZ)
+# NOTE: If this 404s, it's due to Gateway /api/** -> Service /api/pairs mismatch. 
+# Service expects /pairs, Gateway likely forwards /api/pairs.
+POST {{host}}/api/trading/pairs
+Content-Type: {{contentType}}
+
+{
+  "symbol": "BTC-USDZ",
+  "baseCurrency": "BTC",
+  "quoteCurrency": "USDZ",
+  "baseCurrencyScale": 2,
+  "quoteCurrencyScale": 2,
+  "lotSize": 0.001
+}
+
+### Trading Service: Add Pair (ETH-USDZ)
+POST {{host}}/api/trading/pairs
+Content-Type: {{contentType}}
+
+{
+  "symbol": "ETH-USDZ",
+  "baseCurrency": "ETH",
+  "quoteCurrency": "USDZ",
+  "baseCurrencyScale": 2,
+  "quoteCurrencyScale": 2,
+  "takerFee": 0,
+  "makerFee": 0,
+  "lotSize": 0.001
+}
+
+### Trading Service: Add Pair (SOL-USDZ)
+POST {{host}}/api/trading/pairs
+Content-Type: {{contentType}}
+
+{
+  "pair": "SOLUSDZ_P",
+  "baseCurrency": "SOL",
+  "quoteCurrency": "USDZ",
+  "baseCurrencyScale": 2,
+  "quoteCurrencyScale": 2,
+  "takerFee": 100,
+  "makerFee": 50
+}
+
+### OrderController: Place Buy Order
+POST {{host}}/api/trading/order
+Content-Type: {{contentType}}
+
+{
+  "senderAddress": "0x123",
+  "pair": "BTC-USDZ",
+  "side": "BUY",
+  "type": "LIMIT",
+  "entryPrice": "50000",
+  "sizeQuote": "100",
+  "leverage": 10,
+  "exitPrice": "0",
+  "tpPrice": "0",
+  "slPrice": "0",
+  "liqPrice": "0"
+}
+
+### OrderController: Place Buy Order (User 1)
+POST {{host}}/api/trading/order
+Content-Type: {{contentType}}
+
+{
+  "senderAddress": "0x00258718b31b15c09f1d926e72ab1954715e46b5",
+  "pair": "ETH-USDZ",
+  "side": "BUY",
+  "type": "LIMIT",
+  "entryPrice": "3000.15",
+  "sizeQuote": "5000",
+  "leverage": 10,
+  "exitPrice": "0",
+  "tpPrice": "0",
+  "slPrice": "0",
+  "liqPrice": "0" 
+}
+
+### OrderController: Place Buy Order (User 2)
+POST {{host}}/api/trading/order
+Content-Type: {{contentType}}
+
+{
+  "senderAddress": "0x00258718b31b15c09f1d926e72ab1954715e46b",
+  "pair": "ETH-USDZ",
+  "side": "BUY",
+  "type": "LIMIT",
+  "entryPrice": "4000.15",
+  "sizeQuote": "5000",
+  "leverage": 10,
+  "exitPrice": "0",
+  "tpPrice": "0",
+  "slPrice": "0",
+  "liqPrice": "0" 
+}
+
+
+# ==============================================================================
+# TRADING SERVICE - POTENTIAL ROUTING CONFLICTS
+# ==============================================================================
+# These endpoints mimic the trading service routes but under /api/user.
+# Since current gateway /api/user/** points to USER_SERVICE, these likely fail
+# or hit the wrong service. Included for completeness per user request.
+
+### Trading Service: Create User (Trading DB)
+POST {{host}}/api/trading/user/create
+Content-Type: {{contentType}}
+
+{
+  "uid": 1
+}
+
+### Trading Service: Deposit (Trading DB)
+POST {{host}}/api/trading/user/deposit
+Content-Type: {{contentType}}
+
+{
+  "uid": 1,
+  "amount": "1000",
+  "type": "DEPOSIT",
+  "currency": "USDZ"
+}
+
+### Trading Service: Balance (Trading DB)
+GET {{host}}/api/trading/user/balance?id=1&symbol=USDZ

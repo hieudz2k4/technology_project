@@ -1,0 +1,129 @@
+
+
+services:
+  # Infrastructure Services
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-network
+
+  # Application Services
+  eureka_server:
+    build: ./eureka_server
+    container_name: eureka_server
+    ports:
+      - "8761:8761"
+    networks:
+      - backend-network
+
+  config_server:
+    build: ./config_server
+    container_name: config_server
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka_server:8761/eureka/
+      SPRING_PROFILES_ACTIVE: native
+    depends_on:
+      - eureka_server
+    networks:
+      - backend-network
+
+  api_gateway:
+    build: ./api_gateway
+    container_name: api_gateway
+    ports:
+      - "8090:8090"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka_server:8761/eureka/
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config_server:8888"
+    depends_on:
+      - eureka_server
+      - config_server
+    networks:
+      - backend-network
+
+  trading_service:
+    build: ./trading_service
+    container_name: trading_service
+    ports:
+      - "8081:8081"
+      - "9094:9094" # gRPC
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka_server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/tradingdb
+      SPRING_DATA_REDIS_HOST: redis
+      GRPC_CLIENT_USER_SERVICE_ADDRESS: static://user_service:9091
+    depends_on:
+      - eureka_server
+      - mysql
+      - redis
+    networks:
+      - backend-network
+
+  user_service:
+    build: ./user_service
+    container_name: user_service
+    ports:
+      - "8080:8080"
+      - "9091:9091" # gRPC
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka_server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/userdb
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      - eureka_server
+      - mysql
+      - redis
+    networks:
+      - backend-network
+
+  market_price_service:
+    build: ./market_price_service
+    container_name: market_price_service
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka_server:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      - eureka_server
+      - redis
+    networks:
+      - backend-network
+  
+  transfer_service:
+    build: ./transfer_service
+    container_name: transfer_service
+    ports:
+      - "8083:8083"
+    environment:
+      # Add environment variables here if needed
+      # e.g. REDIS_HOST: redis
+      # DB_HOST: mysql
+      PORT: 8083
+    networks:
+      - backend-network
+
+volumes:
+  mysql_data:
+
+networks:
+  backend-network:
+    driver: bridge

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package transfer;
+
+service TransferService {
+  rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+}
+
+message GetBalanceRequest {
+  string userId = 1;
+  string currency = 2;
+}
+
+message GetBalanceResponse {
+  string balance = 1;
+  string currency = 2;
+}

@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS tradingdb;
+
+CREATE DATABASE IF NOT EXISTS userdb;
+
+GRANT ALL PRIVILEGES ON tradingdb.* TO 'tradingdb' @'%' IDENTIFIED BY 'tradingdb';
+
+GRANT ALL PRIVILEGES ON userdb.* TO 'userdb' @'%' IDENTIFIED BY 'userdb';
+
+FLUSH PRIVILEGES;

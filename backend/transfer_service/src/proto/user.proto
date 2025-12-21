@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package user;
+
+service UserService {
+    rpc GetUidByAddress (GetUidByAddressRequest) returns (GetUidByAddressResponse);
+}
+
+message GetUidByAddressRequest {
+    string address = 1;
+}
+
+message GetUidByAddressResponse {
+    int64 uid = 1;
+}

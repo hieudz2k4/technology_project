@@ -1,0 +1,35 @@
+@host = http://localhost:8082
+@contentType = application/json
+
+# ==============================================================================
+# TRANSFER SERVICE
+# ==============================================================================
+
+### Transfer Service: Test Env
+GET {{host}}/api/transfer/testenv
+
+### Transfer Service: Test Hello
+GET {{host}}/api/transfer/test
+
+### Transfer Service: Deposit
+POST {{host}}/api/transfer/deposit
+Content-Type: {{contentType}}
+
+{
+  "addressFrom": "0x123",
+  "addressTo": "0x456",
+  "amount": 100
+}
+
+### Transfer Service: Withdraw
+POST {{host}}/api/transfer/withdraw
+Content-Type: {{contentType}}
+
+{
+  "addressFrom": "0x456",
+  "addressTo": "0x123",
+  "amount": 50
+}
+
+### Transfer Service: Balance
+GET {{host}}/api/transfer/balance/0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc

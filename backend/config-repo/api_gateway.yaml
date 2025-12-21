@@ -1,0 +1,62 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: transfer_service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/transfer/**
+        - id: user_service
+          uri: lb://user_service
+          predicates:
+            - Path=/api/user/**
+        - id: market_price_service
+          uri: lb:ws://market_price_service
+          predicates:
+            - Path=/ws/market/**
+        - id: market_price_service_http
+          uri: lb://market_price_service
+          predicates:
+            - Path=/api/market/**
+        - id: trading_service
+          uri: lb://trading_service
+          predicates:
+            - Path=/api/trading/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+server:
+  port: 8090
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

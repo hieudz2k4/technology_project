@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/userdb
+    username: userdb
+    password: userdb
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+server:
+  port: 8080
+
+grpc:
+  server:
+    port: 9091
+
+logging:
+  level:
+    org:
+      springframework:
+        web: INFO
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
