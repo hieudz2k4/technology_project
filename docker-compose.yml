@@ -1,0 +1,86 @@
+services:
+  # Database Service
+  db:
+    image: mysql:8.0
+    container_name: hyperliquid_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tradingdb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend/hyperliquid_service
+      dockerfile: Dockerfile
+    container_name: hyperliquid_backend
+    restart: always
+    ports:
+      - "3005:3005"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=myuser
+      - DB_PASSWORD=mypassword
+      - DB_DATABASE=tradingdb
+    env_file:
+      - ./backend/hyperliquid_service/.env
+    volumes:
+      - ./backend/hyperliquid_service/.env:/usr/src/app/.env
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Backend Health Monitor (Sidecar)
+  health-monitor:
+    build:
+      context: ./backend/hyperliquid_service
+      dockerfile: Dockerfile
+    container_name: hyperliquid_monitor
+    command: ["node", "dist/scripts/health-monitor.js"]
+    restart: always
+    environment:
+      - HEALTH_CHECK_URL=http://backend:3005/health
+    env_file:
+      - ./backend/hyperliquid_service/.env
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend/hyperliquid_tracker
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3005}
+    container_name: hyperliquid_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3005
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:

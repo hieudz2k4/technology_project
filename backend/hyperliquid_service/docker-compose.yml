@@ -1,0 +1,25 @@
+services:
+  hyperliquid-service:
+    build: .
+    container_name: hyperliquid_service
+    ports:
+      - "3005:3005"
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/usr/src/app/.env
+    restart: always
+
+  health-monitor:
+    build: .
+    container_name: health_monitor
+    command: ["node", "dist/scripts/health-monitor.js"]
+    environment:
+      - HEALTH_CHECK_URL=http://hyperliquid-service:3005/health
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/usr/src/app/.env
+    depends_on:
+      - hyperliquid-service
+    restart: always
