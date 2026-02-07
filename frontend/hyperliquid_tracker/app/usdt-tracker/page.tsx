@@ -1,7 +1,9 @@
 "use client"
 
+
 import { useState, useEffect } from "react"
 import { io } from "socket.io-client"
+import { API_URL } from "@/lib/config"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -42,7 +44,7 @@ export default function UsdtTrackerPage() {
         const fetchTransfers = async () => {
             setIsLoading(true)
             try {
-                const response = await fetch(`http://localhost:3005/usdt-tracker?page=${currentPage}&limit=${itemsPerPage}`)
+                const response = await fetch(`${API_URL}/usdt-tracker?page=${currentPage}&limit=${itemsPerPage}`)
                 if (!response.ok) {
                     throw new Error("Failed to fetch transfers")
                 }
@@ -60,7 +62,7 @@ export default function UsdtTrackerPage() {
     }, [currentPage])
 
     useEffect(() => {
-        const socket = io('http://localhost:3005');
+        const socket = io(API_URL);
 
         socket.on('connect', () => {
             console.log('Connected to WebSocket');

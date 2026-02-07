@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import { API_URL } from "@/lib/config"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Wallet, ArrowLeft, TrendingUp, DollarSign, Activity, AlertCircle } from "lucide-react"
@@ -42,7 +43,7 @@ export default function AddressPage() {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`http://127.0.0.1:3005/wallet/${address}`)
+                const res = await fetch(`${API_URL}/wallet/${address}`)
                 if (!res.ok) {
                     if (res.status === 404) throw new Error("Wallet not found")
                     throw new Error("Failed to fetch wallet data")

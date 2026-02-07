@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { API_URL } from "@/lib/config"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -106,7 +107,7 @@ export default function LeaderboardPage() {
     const fetchUsers = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://localhost:3005/traders?page=${currentPage}&limit=${itemsPerPage}`)
+        const response = await fetch(`${API_URL}/traders?page=${currentPage}&limit=${itemsPerPage}`)
         if (!response.ok) {
           throw new Error("Failed to fetch traders")
         }
