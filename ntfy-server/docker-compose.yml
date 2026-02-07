@@ -1,0 +1,16 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: ntfy
+    command: serve
+    environment:
+      - NTFY_BASE_URL=http://178.128.59.246:8080
+      - NTFY_AUTH_FILE=/var/lib/ntfy/auth.db
+      - NTFY_AUTH_DEFAULT_ACCESS=deny-all
+    volumes:
+      - ./cache:/var/cache/ntfy
+      - ./config:/etc/ntfy
+      - ./auth:/var/lib/ntfy
+    ports:
+      - 8080:80
+    restart: always
