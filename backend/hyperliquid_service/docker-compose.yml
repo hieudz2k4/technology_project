@@ -1,4 +1,27 @@
 services:
+  # === Database Service ===
+  mysql:
+    image: mysql:8.0
+    container_name: hyperliquid_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD} 
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === App Service ===
   hyperliquid-service:
     build: .
     container_name: hyperliquid_service
@@ -6,10 +29,20 @@ services:
       - "3005:3005"
     env_file:
       - .env
-    volumes:
-      - ./.env:/usr/src/app/.env
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
     restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app_network
 
+  # === Monitor Service ===
   health-monitor:
     build: .
     container_name: health_monitor
@@ -18,8 +51,15 @@ services:
       - HEALTH_CHECK_URL=http://hyperliquid-service:3005/health
     env_file:
       - .env
-    volumes:
-      - ./.env:/usr/src/app/.env
     depends_on:
       - hyperliquid-service
     restart: always
+    networks:
+      - app_network
+
+volumes:
+  mysql_data:
+
+networks:
+  app_network:
+    driver: bridge
