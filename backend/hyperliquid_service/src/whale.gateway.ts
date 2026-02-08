@@ -5,7 +5,8 @@ import { OnModuleInit } from '@nestjs/common';
 
 @WebSocketGateway({
     cors: {
-        origin: '*', // Allow all origins for now, can be restricted later
+        origin: true,
+        credentials: true,
     },
 })
 export class WhaleGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
