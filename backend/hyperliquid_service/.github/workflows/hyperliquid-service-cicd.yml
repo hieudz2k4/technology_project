@@ -1,4 +1,4 @@
-name: Backend CI/CD
+name: Hyperliquid_service CI/CD
 
 on:
   push:
@@ -44,6 +44,21 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/hyperliquid_service
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/hyperliquid-service:latest
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -54,4 +69,13 @@ jobs:
             cd ${{ secrets.VPS_TARGET_DIR }}
             git pull origin main
             cd backend/hyperliquid_service
-            docker compose up -d --build
+            
+            # Export Docker credentials for the compose file
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            
+            # Pull latest images
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            
+            # Restart services
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+

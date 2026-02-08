@@ -1,0 +1,10 @@
+services:
+  hyperliquid-service:
+    build: !reset
+    image: ${DOCKER_USERNAME}/hyperliquid-service:latest
+    pull_policy: always
+
+  health-monitor:
+    build: !reset
+    image: ${DOCKER_USERNAME}/hyperliquid-service:latest
+    pull_policy: always
