@@ -12,8 +12,6 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('TrongridService', () => {
   let service: TrongridService;
-  let pushoverService: PushoverService;
-  let configService: ConfigService;
 
   const mockPushoverService = {
     sendNotification: jest.fn().mockResolvedValue({ status: 1 }),
@@ -52,8 +50,8 @@ describe('TrongridService', () => {
     }).compile();
 
     service = module.get<TrongridService>(TrongridService);
-    pushoverService = module.get<PushoverService>(PushoverService);
-    configService = module.get<ConfigService>(ConfigService);
+    // pushoverService = module.get<PushoverService>(PushoverService);
+    // configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -74,6 +72,7 @@ describe('TrongridService', () => {
     it('should skip polling if already polling', async () => {
       (service as any).isPolling = true;
       await service.pollTransactions();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
@@ -105,6 +104,7 @@ describe('TrongridService', () => {
 
       await service.pollTransactions();
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.get).toHaveBeenCalledWith(
         expect.stringContaining('api.trongrid.io'),
         expect.objectContaining({
@@ -116,7 +116,9 @@ describe('TrongridService', () => {
       expect(mockPushoverService.sendNotification).toHaveBeenCalledTimes(2);
 
       // Check call order - older should be processed first
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const call1 = mockPushoverService.sendNotification.mock.calls[0][0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const call2 = mockPushoverService.sendNotification.mock.calls[1][0];
 
       expect(call1).toContain('200,000,000 USDT'); // txOlder

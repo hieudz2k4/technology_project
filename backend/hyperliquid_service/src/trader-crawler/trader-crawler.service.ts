@@ -48,7 +48,7 @@ export class TraderCrawlerService {
     private readonly httpService: HttpService,
     @InjectRepository(Trader)
     private readonly traderRepository: Repository<Trader>,
-  ) { }
+  ) {}
 
   /**
    * Crawls traders from HyperDash based on predefined criteria.
@@ -80,7 +80,8 @@ export class TraderCrawlerService {
           const response = await this.fetchTraders(variables);
 
           // GraphQL response structure: { data: { exploreTraders: ... }, errors?: ... }
-          const responseBody: GraphQLResponse<ExploreTradersResponse> = response.data;
+          const responseBody: GraphQLResponse<ExploreTradersResponse> =
+            response.data;
 
           if (responseBody.errors && responseBody.errors.length > 0) {
             throw new Error(`GraphQL Error: ${responseBody.errors[0].message}`);
@@ -139,7 +140,7 @@ export class TraderCrawlerService {
             return passTotalTrades && passDrawdown && passPnl;
           });
 
-          const formatted = filteredData.map(this.mapTraderData);
+          const formatted = filteredData.map((t) => this.mapTraderData(t));
           allTraders = allTraders.concat(formatted);
 
           totalPages = pagination.totalPages;
@@ -150,7 +151,7 @@ export class TraderCrawlerService {
           }
         } catch (apiError) {
           this.logger.warn(
-            `API request failed: ${apiError.message}. Using mock data for verification.`,
+            `API request failed: ${(apiError as Error).message}. Using mock data for verification.`,
           );
           // Mock data fallback
           const mockTraders: FormattedTrader[] = Array.from({ length: 5 }).map(

@@ -44,7 +44,7 @@ export class PushoverService {
       return response.data;
     } catch (error) {
       this.logger.error(
-        `Failed to send Pushover notification: ${error.message}`,
+        `Failed to send Pushover notification: ${(error as Error).message}`,
       );
       if (axios.isAxiosError(error) && error.response) {
         this.logger.error(

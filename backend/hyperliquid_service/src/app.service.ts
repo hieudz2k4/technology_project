@@ -113,8 +113,8 @@ export class AppService {
       return walletProfile;
     } catch (error) {
       this.logger.error(
-        `Error fetching wallet data: ${error.message}`,
-        error.stack,
+        `Error fetching wallet data: ${(error as Error).message}`,
+        (error as Error).stack,
       );
       if (error instanceof HttpException) {
         throw error;

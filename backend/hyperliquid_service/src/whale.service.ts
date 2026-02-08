@@ -73,7 +73,7 @@ export class WhaleService implements OnModuleInit, OnModuleDestroy {
     private readonly httpService: HttpService,
     @InjectRepository(WhaleTrade)
     private readonly whaleTradeRepository: Repository<WhaleTrade>,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await Promise.all([this.updateKnownTraders(), this.fetchUniverse()]);
@@ -249,7 +249,7 @@ export class WhaleService implements OnModuleInit, OnModuleDestroy {
       } else if (data instanceof ArrayBuffer) {
         dataString = Buffer.from(data).toString();
       } else {
-        dataString = data as string;
+        dataString = data;
       }
       const message = JSON.parse(dataString) as WebSocketMessage;
 

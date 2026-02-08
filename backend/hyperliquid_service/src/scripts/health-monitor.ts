@@ -39,7 +39,7 @@ async function sendAlert(message: string) {
     console.log('Alert sent via Pushover');
     lastAlertTime = now;
   } catch (error: any) {
-    console.error('Failed to send Pushover alert:', error.message);
+    console.error('Failed to send Pushover alert:', (error as Error).message);
   }
 }
 
@@ -48,7 +48,7 @@ async function checkHealth() {
     await axios.get(HEALTH_URL, { timeout: 5000 });
     console.log(`[${new Date().toISOString()}] Service is HEALTHY`);
   } catch (error: any) {
-    const errorMsg = `Service check failed: ${error.message}`;
+    const errorMsg = `Service check failed: ${(error as Error).message}`;
     console.error(`[${new Date().toISOString()}] ${errorMsg}`);
     await sendAlert(errorMsg);
   }
