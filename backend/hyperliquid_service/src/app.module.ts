@@ -43,4 +43,4 @@ import { WhaleController } from './whale.controller';
   controllers: [AppController, WhaleController],
   providers: [AppService, WhaleService, WhaleGateway, EventsGateway],
 })
-export class AppModule { }
+export class AppModule {}

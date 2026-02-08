@@ -3,6 +3,27 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { WalletProfileDto, PositionDto } from './wallet.dto';
 
+// Interface for Hyperliquid clearinghouse state response
+interface MarginSummary {
+  accountValue: string;
+  totalNtlPos: string;
+  totalMarginUsed: string;
+}
+
+interface AssetPosition {
+  position: {
+    coin: string;
+    szi: string;
+    entryPx: string;
+    unrealizedPnl: string;
+  };
+}
+
+interface ClearinghouseState {
+  marginSummary: MarginSummary;
+  assetPositions: AssetPosition[];
+}
+
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
@@ -17,22 +38,29 @@ export class AppService {
       this.logger.log(`Fetching wallet data for ${address}`);
 
       const payload = {
-        type: "clearinghouseState",
-        user: address
+        type: 'clearinghouseState',
+        user: address,
       };
 
-      const response = await axios.post(this.HYPERLIQUID_API_URL, payload, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await axios.post<ClearinghouseState>(
+        this.HYPERLIQUID_API_URL,
+        payload,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
 
       const data = response.data;
 
       // Handle case where user might not be found or has no state
       if (!data || !data.marginSummary) {
-        // Return empty/default state or throw error? 
+        // Return empty/default state or throw error?
         // If partial data exists, we try to use it. If completely null, throw 404.
         if (!data) {
-          throw new HttpException('Wallet not found or no data returned', HttpStatus.NOT_FOUND);
+          throw new HttpException(
+            'Wallet not found or no data returned',
+            HttpStatus.NOT_FOUND,
+          );
         }
       }
 
@@ -57,7 +85,7 @@ export class AppService {
       // Map Positions
       const positions: PositionDto[] = [];
       if (data.assetPositions && Array.isArray(data.assetPositions)) {
-        data.assetPositions.forEach((posWrapper: any) => {
+        data.assetPositions.forEach((posWrapper) => {
           const pos = posWrapper.position;
           if (pos) {
             const size = new BigNumber(pos.szi);
@@ -68,7 +96,7 @@ export class AppService {
                 side: side,
                 size: size.abs().toString(),
                 entryPrice: new BigNumber(pos.entryPx).toString(),
-                pnl: new BigNumber(pos.unrealizedPnl).toString()
+                pnl: new BigNumber(pos.unrealizedPnl).toString(),
               });
             }
           }
@@ -79,17 +107,22 @@ export class AppService {
         accountValue: accountValue.toFixed(2),
         leverage: leverage.toFixed(2) + 'x',
         marginUsage: marginUsage.toFixed(2) + '%',
-        positions: positions
+        positions: positions,
       };
 
       return walletProfile;
-
     } catch (error) {
-      this.logger.error(`Error fetching wallet data: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching wallet data: ${error.message}`,
+        error.stack,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException('Failed to fetch wallet data', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to fetch wallet data',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

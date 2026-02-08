@@ -6,9 +6,9 @@ import { HttpModule } from '@nestjs/axios';
 import { TraderCrawlerController } from './trader-crawler.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Trader]), HttpModule],
-    controllers: [TraderCrawlerController],
-    providers: [TraderCrawlerService],
-    exports: [TraderCrawlerService],
+  imports: [TypeOrmModule.forFeature([Trader]), HttpModule],
+  controllers: [TraderCrawlerController],
+  providers: [TraderCrawlerService],
+  exports: [TraderCrawlerService],
 })
-export class TraderCrawlerModule { }
+export class TraderCrawlerModule {}

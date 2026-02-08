@@ -4,7 +4,7 @@ import { WalletProfileDto } from './wallet.dto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {
@@ -17,7 +17,9 @@ export class AppController {
   }
 
   @Get('/wallet/:address')
-  async getWalletProfile(@Param('address') address: string): Promise<WalletProfileDto> {
+  async getWalletProfile(
+    @Param('address') address: string,
+  ): Promise<WalletProfileDto> {
     return this.appService.fetchWalletData(address);
   }
 }

@@ -9,14 +9,14 @@ import { TrongridController } from './trongrid.controller';
 import { EventsGateway } from '../events.gateway';
 
 @Module({
-    imports: [
-        ConfigModule,
-        ScheduleModule,
-        PushoverModule,
-        TypeOrmModule.forFeature([UsdtTransfer]),
-    ],
-    providers: [TrongridService, EventsGateway],
-    controllers: [TrongridController],
-    exports: [TrongridService]
+  imports: [
+    ConfigModule,
+    ScheduleModule,
+    PushoverModule,
+    TypeOrmModule.forFeature([UsdtTransfer]),
+  ],
+  providers: [TrongridService, EventsGateway],
+  controllers: [TrongridController],
+  exports: [TrongridService],
 })
-export class TrongridModule { }
+export class TrongridModule {}
