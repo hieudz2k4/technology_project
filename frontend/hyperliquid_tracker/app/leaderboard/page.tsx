@@ -93,7 +93,10 @@ export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("pnl")
   const { trades: allWhaleTrades, isConnected } = useHyperliquidWebSocket()
-  const whaleTrades = allWhaleTrades.filter((t) => t.valueUsd >= 1000000)
+  const whaleTrades = allWhaleTrades.filter((t) => {
+    const threshold = t.isKnownTrader ? 1000000 : 10000000;
+    return t.valueUsd >= threshold;
+  })
 
   const [users, setUsers] = useState<LeaderboardUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -174,7 +177,7 @@ export default function LeaderboardPage() {
                 {isConnected ? "Live Connection" : "Connecting..."}
               </Badge>
             </div>
-            <CardDescription>Real-time trades over $1,000,000 across major pairs</CardDescription>
+            <CardDescription>Real-time trades over $1M (Known) or $10M (Unknown)</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="rounded-md border h-[500px] overflow-auto relative">

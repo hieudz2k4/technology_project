@@ -295,7 +295,16 @@ export class WhaleService implements OnModuleInit, OnModuleDestroy {
           });
 
           // Smart Filtering: Whale check OR Known Trader check
-          if (totalValueUsd >= this.WHALE_THRESHOLD_USD || isKnownTrader) {
+          // Known Trader: > $1,000,000
+          // Stranger: > $10,000,000
+          const KNOWN_TRADER_THRESHOLD = 1000000;
+          const STRANGER_THRESHOLD = 10000000;
+
+          const isSignificant =
+            (isKnownTrader && totalValueUsd >= KNOWN_TRADER_THRESHOLD) ||
+            (!isKnownTrader && totalValueUsd >= STRANGER_THRESHOLD);
+
+          if (isSignificant) {
             const avgPx = totalValueUsd / totalSize;
 
             if (isKnownTrader) {
@@ -317,7 +326,14 @@ export class WhaleService implements OnModuleInit, OnModuleDestroy {
               hash: trades[0].hash, // Use first hash as identifier
               users: Array.from(users),
               valueUsd: totalValueUsd,
-              isWhale: totalValueUsd >= this.WHALE_THRESHOLD_USD,
+              isWhale: totalValueUsd >= STRANGER_THRESHOLD, // Only mark as "Whale" if it meets the higher threshold? Or just signifcant? Let's keep strict definition of Whale as the larger one for now, or just simply true since it passed the filter.
+              // Actually, let's keep isWhale true if it passed the filter, as specific logic might depend on it.
+              // Re-reading usage: isWhale seems to be just a flag. Let's set it to true if it met the stranger threshold, or maybe just if it's significant.
+              // Let's adhere to the user's "Whale" usually implying the large raw value.
+              // But for the frontend, if we want to show it, we should probably mark it.
+              // Let's stick to the prompt's implication: "filter orders ...".
+              // I will set isWhale to true if >= STRANGER_THRESHOLD, and rely on isKnownTrader for the others.
+              // However, the requested logic is just about FILTERING what gets saved/emitted.
               fillCount: trades.length,
               isKnownTrader,
             };

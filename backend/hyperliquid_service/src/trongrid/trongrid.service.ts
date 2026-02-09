@@ -165,6 +165,7 @@ export class TrongridService implements OnModuleInit {
         transfer.sender = sender;
         transfer.receiver = receiver;
         transfer.type = type;
+        transfer.chain = 'TRON';
         transfer.timestamp = tx.block_timestamp;
         await this.transferRepository.save(transfer);
         this.logger.log(`Saved USDT transfer: ${hash}`);

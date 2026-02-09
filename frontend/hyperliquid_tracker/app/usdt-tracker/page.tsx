@@ -30,6 +30,7 @@ interface UsdtTransfer {
     sender: string
     receiver: string
     type: string
+    chain?: string // 'TRON' | 'ETHEREUM'
     timestamp: number
 }
 
@@ -104,18 +105,30 @@ export default function UsdtTrackerPage() {
         return new Date(Number(timestamp)).toLocaleString()
     }
 
+    const getChainBadge = (chain?: string) => {
+        if (chain === 'ETHEREUM') {
+            return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">Ethereum</Badge>
+        }
+        return <Badge variant="secondary" className="bg-red-100 text-red-800 hover:bg-red-200 border-red-200">Tron</Badge>
+    }
+
+    const getExplorerLink = (hash: string, chain?: string) => {
+        const chainSlug = chain?.toLowerCase() || 'tron';
+        return `https://whale-alert.io/transaction/${chainSlug}/${hash}`;
+    }
+
     return (
         <main className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8 space-y-8">
                 <div>
                     <h1 className="text-3xl font-bold">USDT Treasury Tracker</h1>
-                    <p className="text-muted-foreground">Monitor large USDT mints, burns, and transfers on Tron network</p>
+                    <p className="text-muted-foreground">Monitor large USDT mints, burns, and transfers on Tron & Ethereum networks</p>
                 </div>
 
                 <Card>
                     <CardHeader>
                         <CardTitle>Recent Large Transfers (&gt;100M USDT)</CardTitle>
-                        <CardDescription>Real-time data from TronGrid</CardDescription>
+                        <CardDescription>Real-time data from TronGrid & Ethereum</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="rounded-md border">
@@ -123,6 +136,7 @@ export default function UsdtTrackerPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Time</TableHead>
+                                        <TableHead>Chain</TableHead>
                                         <TableHead>Type</TableHead>
                                         <TableHead>Amount</TableHead>
                                         <TableHead>Sender</TableHead>
@@ -133,13 +147,13 @@ export default function UsdtTrackerPage() {
                                 <TableBody>
                                     {isLoading ? (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center">
+                                            <TableCell colSpan={7} className="h-24 text-center">
                                                 Loading transfers...
                                             </TableCell>
                                         </TableRow>
                                     ) : transfers.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center">
+                                            <TableCell colSpan={7} className="h-24 text-center">
                                                 No transfers found.
                                             </TableCell>
                                         </TableRow>
@@ -148,6 +162,9 @@ export default function UsdtTrackerPage() {
                                             <TableRow key={tx.id}>
                                                 <TableCell className="text-muted-foreground whitespace-nowrap">
                                                     {formatDate(tx.timestamp)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {getChainBadge(tx.chain)}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant={tx.type === 'INFLOW' ? 'default' : tx.type === 'OUTFLOW' ? 'destructive' : 'secondary'}>
@@ -177,7 +194,7 @@ export default function UsdtTrackerPage() {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button variant="ghost" size="sm" asChild>
-                                                        <a href={`https://tronscan.org/#/transaction/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                        <a href={getExplorerLink(tx.hash, tx.chain)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                             View <ExternalLink className="h-3 w-3" />
                                                         </a>
                                                     </Button>

@@ -6,6 +6,7 @@ import { WhaleGateway } from './whale.gateway';
 import { EventsGateway } from './events.gateway';
 import { PushoverModule } from './pushover/pushover.module';
 import { TrongridModule } from './trongrid/trongrid.module';
+import { EtherModule } from './ether/ether.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
@@ -22,6 +23,7 @@ import { WhaleController } from './whale.controller';
     ScheduleModule.forRoot(),
     PushoverModule,
     TrongridModule,
+    EtherModule,
     HttpModule,
     TraderCrawlerModule,
     TypeOrmModule.forRootAsync({

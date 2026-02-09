@@ -21,6 +21,9 @@ export class UsdtTransfer {
   @Column()
   type: string; // INFLOW or OUTFLOW or UNKNOWN
 
+  @Column({ default: 'TRON' })
+  chain: string;
+
   @Column({ type: 'bigint' })
   timestamp: number;
 }
