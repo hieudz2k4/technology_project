@@ -92,11 +92,61 @@ interface LeaderboardUser {
 export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("pnl")
-  const { trades: allWhaleTrades, isConnected } = useHyperliquidWebSocket()
-  const whaleTrades = allWhaleTrades.filter((t) => {
-    const threshold = t.isKnownTrader ? 1000000 : 10000000;
-    return t.valueUsd >= threshold;
-  })
+  // Whale Feed State
+  const { lastWhaleTrade, isConnected } = useHyperliquidWebSocket()
+  const [whaleTrades, setWhaleTrades] = useState<any[]>([])
+  const [whalePage, setWhalePage] = useState(1)
+  const [whaleTotalPages, setWhaleTotalPages] = useState(1)
+  const [isWhaleLoading, setIsWhaleLoading] = useState(false)
+  const WHALE_ITEMS_PER_PAGE = 10
+
+  // Fetch Whale Trades on Page Change
+  useEffect(() => {
+    const fetchWhaleTrades = async () => {
+      setIsWhaleLoading(true)
+      try {
+        const response = await fetch(`${API_URL}/whale-trades?page=${whalePage}&limit=${WHALE_ITEMS_PER_PAGE}`)
+        if (response.ok) {
+          const resData = await response.json()
+          // Support both array response (old) and paginated response (new)
+          // But we expect { data, meta } now
+          const trades = resData.data || (Array.isArray(resData) ? resData : [])
+          const meta = resData.meta || { total: trades.length, page: 1, last_page: 1 }
+
+          setWhaleTrades(trades)
+          setWhaleTotalPages(meta.last_page)
+        }
+      } catch (error) {
+        console.error("Error fetching whale trades:", error)
+      } finally {
+        setIsWhaleLoading(false)
+      }
+    }
+    fetchWhaleTrades()
+  }, [whalePage])
+
+  // Listen for Real-time Whale Trades
+  useEffect(() => {
+    if (lastWhaleTrade && whalePage === 1) {
+      setWhaleTrades(prev => {
+        // Avoid duplicates
+        if (prev.some(t => t.hash === lastWhaleTrade.hash)) return prev;
+
+        // Prepend new trade
+        const updated = [lastWhaleTrade, ...prev];
+
+        // Keep page size consistent if full?
+        // User asked "thứ tự thời gian cái nào mới nhất thì thêm vào đầu".
+        // If we strictly follow pagination, we should pop the last one to stay at 10.
+        // But for "live feed" feel, growing it slightly or popping is a choice.
+        // Let's pop to maintain "10 items per page"
+        if (updated.length > WHALE_ITEMS_PER_PAGE) {
+          updated.pop();
+        }
+        return updated;
+      })
+    }
+  }, [lastWhaleTrade, whalePage])
 
   const [users, setUsers] = useState<LeaderboardUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -196,7 +246,7 @@ export default function LeaderboardPage() {
                   {whaleTrades.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center">
-                        Waiting for whale trades...
+                        {isWhaleLoading ? "Loading..." : "Waiting for whale trades..."}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -271,6 +321,26 @@ export default function LeaderboardPage() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+            {/* Whale Feed Pagination */}
+            <div className="flex items-center justify-between p-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWhalePage(Math.max(1, whalePage - 1))}
+                disabled={whalePage === 1 || isWhaleLoading}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">Page {whalePage} of {whaleTotalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWhalePage(Math.min(whaleTotalPages, whalePage + 1))}
+                disabled={whalePage === whaleTotalPages || isWhaleLoading}
+              >
+                Next
+              </Button>
             </div>
           </CardContent>
         </Card>

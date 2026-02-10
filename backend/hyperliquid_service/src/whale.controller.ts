@@ -11,13 +11,27 @@ export class WhaleController {
   ) {}
 
   @Get()
-  async getTrades(@Query('limit') limit: number = 50) {
+  async getTrades(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     // Cap limit to 100 to prevent misuse
     const take = Math.min(Math.max(limit, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
 
-    return this.whaleTradeRepository.find({
+    const [data, total] = await this.whaleTradeRepository.findAndCount({
       order: { time: 'DESC' },
       take: take,
+      skip: skip,
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page: Number(page),
+        last_page: Math.ceil(total / take),
+      },
+    };
   }
 }
